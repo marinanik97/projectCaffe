@@ -119,15 +119,19 @@ public class FDodajStavku extends javax.swing.JDialog {
     private void jbtndodajActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbtndodajActionPerformed
         // TODO add your handling code here:
         boolean validno = ValidatorForme.getInstanca().validacijaPolja(jtxtkolicina);
-        if(!validno){
-           JOptionPane.showMessageDialog(this, ValidatorForme.getInstanca().getPoruka(),"Greska",JOptionPane.ERROR_MESSAGE);
-           return;
+        if (!validno) {
+            JOptionPane.showMessageDialog(this, ValidatorForme.getInstanca().getPoruka(), "Greska", JOptionPane.ERROR_MESSAGE);
+            return;
         }
         Artikal a = (Artikal) jcomboartikal.getSelectedItem();
         int kolicina = Integer.parseInt(jtxtkolicina.getText());
+        if (kolicina == 0 || kolicina < 0) {
+            JOptionPane.showMessageDialog(this, "Kolicina ne sme biti negativna niti jednaka nuli! ", "Greska", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
         double ukupnosapdvom = kolicina * a.getCenaArtiklaSaPdvom();
         double ukupnobezpdva = kolicina * a.getCenaArtiklaBezPdva();
-        StavkaPorudzbenice sp =  new StavkaPorudzbenice(-1, kolicina, ukupnosapdvom, ukupnobezpdva, a, null);
+        StavkaPorudzbenice sp = new StavkaPorudzbenice(-1, kolicina, ukupnosapdvom, ukupnobezpdva, a, null);
         FKreirajPorudzbenicu fkp = (FKreirajPorudzbenicu) getParent();
         fkp.dodajStavku(sp);
         jtxtkolicina.setText("");
@@ -187,15 +191,14 @@ public class FDodajStavku extends javax.swing.JDialog {
     private void popuniArtikle() {
         ServerskiOdgovor so = Kontroler.getInstanca().vratiArtikle();
 
-        if(so.isUspesno()){
-          List<InterfaceObjekat> lista = (List<InterfaceObjekat>) so.getOdgovor();
+        if (so.isUspesno()) {
+            List<InterfaceObjekat> lista = (List<InterfaceObjekat>) so.getOdgovor();
             jcomboartikal.removeAllItems();
             for (InterfaceObjekat objekat : lista) {
                 jcomboartikal.addItem((Artikal) objekat);
             }
-        }
-        else{
-            JOptionPane.showMessageDialog(this, so.getPoruka(),"Greska", JOptionPane.ERROR_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(this, so.getPoruka(), "Greska", JOptionPane.ERROR_MESSAGE);
         }
     }
 }

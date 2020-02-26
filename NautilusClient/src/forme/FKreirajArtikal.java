@@ -24,7 +24,9 @@ import validator.ValidatorForme;
  * @author User
  */
 public class FKreirajArtikal extends javax.swing.JDialog {
+
     Korisnik k;
+
     /**
      * Creates new form FKreirajArtikal
      */
@@ -156,58 +158,61 @@ public class FKreirajArtikal extends javax.swing.JDialog {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
-         boolean val=ValidatorForme.getInstanca().validacijaPolja(jtxtnaziv, jtxtcena);
-        if(!val){
+        boolean val = ValidatorForme.getInstanca().validacijaPolja(jtxtnaziv, jtxtcena);
+        if (!val) {
             JOptionPane.showMessageDialog(this, ValidatorForme.getInstanca().getPoruka(), "Greska", JOptionPane.ERROR_MESSAGE);
             return;
-        }   
+        }
         double cenabez = 0.0;
         String naziv = jtxtnaziv.getText();
-        val=true;
+        val = true;
         for (char c : naziv.toCharArray()) {
-            if(isDigit(c))
-                val=false;
+            if (isDigit(c)) {
+                val = false;
+            }
         }
-        if(val==false){
-            JOptionPane.showMessageDialog(this, "Naziv ne sme sadrzati cifre","Greska", JOptionPane.ERROR_MESSAGE);
-            return; 
-        }          
+        if (val == false) {
+            JOptionPane.showMessageDialog(this, "Naziv ne sme sadrzati cifre", "Greska", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
         try {
-          cenabez = Double.parseDouble(jtxtcena.getText()); 
-          if(cenabez==0)
-              return;
+            cenabez = Double.parseDouble(jtxtcena.getText());
+            if (cenabez == 0 || cenabez < 0) {
+                JOptionPane.showMessageDialog(this, "Cena ne sme biti negativna niti jednaka nuli! ", "Greska", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
         } catch (Exception e) {
-          JOptionPane.showMessageDialog(this, "Cena mora biti broj", "Greska", JOptionPane.ERROR_MESSAGE);
-          return;
+            JOptionPane.showMessageDialog(this, "Cena mora biti broj", "Greska", JOptionPane.ERROR_MESSAGE);
+            return;
         }
         String jmS = (String) jcombojedinica.getSelectedItem();
-        JedinicaMere jm = JedinicaMere.valueOf(jmS) ;
+        JedinicaMere jm = JedinicaMere.valueOf(jmS);
         PDVStopa pdv = (PDVStopa) jcombopdv.getSelectedItem();
-        double cenasa=0;
+        double cenasa = 0;
         double iznos = pdv.getIznos();
-         cenasa =  (double)cenabez * (1 + (double)iznos/100);
-        
+        cenasa = (double) cenabez * (1 + (double) iznos / 100);
+
         Artikal a = new Artikal(-1, naziv, cenasa, cenabez, jm, k, pdv);
-        
+
         ServerskiOdgovor so = Kontroler.getInstanca().vratiArtikle();
 
-        if(so.isUspesno()){
+        if (so.isUspesno()) {
             List<InterfaceObjekat> lista = (List<InterfaceObjekat>) so.getOdgovor();
             ArrayList<Artikal> listaPostojecih = new ArrayList<>();
             for (InterfaceObjekat io : lista) {
                 listaPostojecih.add((Artikal) io);
             }
-            
-            if(listaPostojecih.contains(a)){
+
+            if (listaPostojecih.contains(a)) {
                 JOptionPane.showMessageDialog(this, "Taj artikal vec postoji u bazi", "Greska", JOptionPane.ERROR_MESSAGE);
                 return;
-            }               
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, so.getPoruka(), "Greska", JOptionPane.ERROR_MESSAGE);
         }
-        else{
-            JOptionPane.showMessageDialog(this, so.getPoruka(),"Greska", JOptionPane.ERROR_MESSAGE);
-        }        
         ServerskiOdgovor so1 = Kontroler.getInstanca().sacuvajArtikal(a);
-        JOptionPane.showMessageDialog(this, so1.getPoruka()); 
+        JOptionPane.showMessageDialog(this, so1.getPoruka());
         ocistiFormu();
     }//GEN-LAST:event_jButton1ActionPerformed
 
@@ -288,15 +293,14 @@ public class FKreirajArtikal extends javax.swing.JDialog {
     private void popuniPdvStope() {
         ServerskiOdgovor so = Kontroler.getInstanca().VratiPdvStope();
 
-        if(so.isUspesno()){
-          List<InterfaceObjekat> lista = (List<InterfaceObjekat>) so.getOdgovor();
+        if (so.isUspesno()) {
+            List<InterfaceObjekat> lista = (List<InterfaceObjekat>) so.getOdgovor();
             jcombopdv.removeAllItems();
             for (InterfaceObjekat objekat : lista) {
                 jcombopdv.addItem((PDVStopa) objekat);
             }
-        }
-        else{
-            JOptionPane.showMessageDialog(this, so.getPoruka(),"Greska", JOptionPane.ERROR_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(this, so.getPoruka(), "Greska", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -304,7 +308,7 @@ public class FKreirajArtikal extends javax.swing.JDialog {
         this.k = k;
         jlabkorisnik.setText(k.getIme() + " " + k.getPrezime());
     }
-    
+
     private void ocistiFormu() {
         jtxtcena.setText("");
         jtxtnaziv.setText("");
